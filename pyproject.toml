@@ -1,0 +1,132 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["adapter", "lm", "predict", "signatures", "experiments", "evaluation"]
+
+[project]
+name = "dspy-reasoning"
+version = "0.1.0"
+description = "Multi-step reasoning with DSPy and local language models"
+readme = "README.md"
+requires-python = "==3.12.*"
+
+# All dependencies in one place - works on both laptop and HPC
+dependencies = [
+	# Core ML packages
+	"torch>=2.0",
+	"dspy>=3.0",  # CRITICAL: need 3.x, not 0.x
+	"pydantic>=2.0",  # CRITICAL: need 2.x, not 1.x
+	"accelerate",
+	"transformers>=4.30",
+	"datasets",
+	"psutil",
+	# Testing and linting
+	"pytest",
+	"ruff",
+	"mypy",
+	# All other packages
+	"litellm",
+	# vllm is installed separately - see README for macOS instructions
+	"bitsandbytes; sys_platform == 'linux'",  # Linux only
+	"flashinfer-python; sys_platform == 'linux'",  # Linux only
+	"unsloth; sys_platform == 'linux'",  # Linux only
+	"vllm==0.12.0; sys_platform == 'linux'",  # Linux: install via uv; macOS: install manually
+	"httpx-aiohttp",
+	"openai",
+]
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+
+# Enforce Python 3.12
+target-version = "py312"
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+	"*_env",
+    "__pycache__",
+]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Use tabs for indentation
+indent-style = "tab"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.ruff.lint]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+# Also enable isort (`I`), pydocstyle (`D`), and other useful rules
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "S",   # flake8-bandit (security)
+    "T20", # flake8-print
+]
+
+# Ignore specific rules that might be too strict for your codebase
+ignore = [
+    "E501",  # line too long (handled by formatter, Google style = 80 chars)
+    "D100",  # missing docstring in public module
+    "D101",  # missing docstring in public class
+    "D102",  # missing docstring in public method
+    "D103",  # missing docstring in public function
+    "D104",  # missing docstring in public package
+    "D105",  # missing docstring in magic method
+    "S101",  # use of assert (common in tests)
+    "S311",  # pseudo-random generators (we use for non-cryptographic purposes)
+    "W191",  # indentation contains tabs (we use tabs intentionally)
+    "E101",  # mixed spaces and tabs (formatting handles this)
+    "UP007", # use X | Y for type annotations (maintaining Python < 3.12 compatibility)
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+# Flag errors (`C901`) whenever the complexity level exceeds 10.
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+# Allow print statements and assert statements in test files
+"test_*.py" = ["S101"]
+"**/test_*.py" = ["S101"]
+# Allow print statements in demo/execution files
+"run_multi_step_generation.py" = ["T201"]
