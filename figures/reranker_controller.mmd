@@ -1,0 +1,36 @@
+flowchart TB
+    subgraph Input[" "]
+        State["State s_t"]
+        Tools["Tools/Actions"]
+    end
+
+    subgraph Controller["Reranker Controller"]
+        Enumerate["Enumerate All<br/>Action-Arg Combinations"]
+        Format["Format as Documents"]
+        Score["Score via Reranker"]
+        TopK["Select Top-k"]
+    end
+
+    subgraph Output[" "]
+        Actions["Ranked Actions"]
+        Exec["Execute Tool"]
+        Intervention["Interventions<br/>(continue_reasoning, internal_reasoning, prefix)"]
+    end
+
+    State --> Enumerate
+    Tools --> Enumerate
+    Enumerate --> Format
+    Format --> Score
+    Score --> TopK
+    TopK --> Actions
+    Actions --> Exec
+    Exec --> Intervention
+
+    style Input fill:#e3f2fd,stroke:#1976d2,color:#000
+    style Controller fill:#e1f5fe,stroke:#01579b,color:#000
+    style Output fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style State fill:#bbdefb,stroke:#1976d2,color:#000
+    style Tools fill:#bbdefb,stroke:#1976d2,color:#000
+    style Actions fill:#c8e6c9,stroke:#388e3c,color:#000
+    style Exec fill:#fff3e0,stroke:#f57c00,color:#000
+    style Intervention fill:#81c784,stroke:#388e3c,color:#000

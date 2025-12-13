@@ -1,10 +1,10 @@
 # **STATe-of-Thoughts: Structured Action Templates for Tree-of-Thoughts**
 
-! **Note**: This is a preliminary preview, a full release will come soon. Please refer to LICENSE.txt for the licensing of this preview.
+_**Note**: This is a preliminary preview, a full release will come soon. Please refer to LICENSE.txt for the licensing of this preview._
 
 **dspy-reasoning** is a modular framework that implements **STATe-of-Thoughts (Structured Action Templates for Tree-of-Thoughts)**. It is a method for inference-time compute that augments beam search with targeted interventions (tools) to modulate reasoning trajectories (influencing latent properties of reasoning steps like structure, style, and content).
 
-Built on [DSPy](https://github.com/stanfordnlp/dspy) and [vLLM](https://github.com/vllm-project/vllm), this framework enables Local Large Language Models (LLMs) to perform systematic exploration of reasoning trajectories, evaluate intermediate steps (Process Supervision), and select optimal paths for complex tasks like argumentation, creative writing, and math.
+Built on [DSPy](https://github.com/stanfordnlp/dspy) and [vLLM](https://github.com/vllm-project/vllm), this framework enables local Large Language Models (LLMs) to perform systematic exploration of reasoning trajectories, evaluate intermediate steps (process supervision), and select optimal trajectories for complex tasks like argumentation, creative writing, and math.
 
 ---
 
@@ -111,7 +111,8 @@ This compositionality allows each sub-module to be tested, optimized, and reused
 
 **Tree of Thoughts (ToT)** ([Yao et al., 2023](https://papers.nips.cc/paper_files/paper/2023/hash/271db9922b8d1f4dd7aaef84ed5ac703-Abstract-Conference.html)) is a framework for deliberate problem-solving with large language models. While standard autoregressive LMs make token-level, left-to-right decisions during inference, ToT enables exploration over coherent units of text called *thoughts*—intermediate reasoning steps toward solving a problem. ToT frames problem-solving as search over a tree, where each node represents a *state* $s = [x, z_1, \ldots, z_i]$ consisting of the input $x$ and the sequence of thoughts generated so far. The objective of Tree of Thoughts is to create one or more promising candidates for an answer to the problem, $y$. The framework involves four components: (1) *decomposing* the problem into thought steps, (2) *generating* candidate thoughts from each state, (3) *evaluating* states to guide search, and (4) applying a *search algorithm* (e.g., BFS or DFS). ToT has been shown to improve performance on several tasks requiring non-trivial planning or search.
 
-**Limitations of Standard ToT.** Despite its effectiveness, the original Tree of Thoughts framework has several limitations that we address in this work. First, *diversity in branching* is limited—without explicit guidance, sampled thoughts tend to converge to similar content, reducing the benefit of exploring multiple paths. Second, *evaluation functions* are relatively simple, using coarse classifications (e.g., "sure/maybe/impossible") rather than nuanced multi-dimensional rubrics. Third, *there is no mechanism for early stopping*—the search proceeds to a fixed depth regardless of whether sufficient reasoning has already been accumulated. Finally, *interventions are limited*—ToT lacks structured actions or tools that can systematically modulate properties of generated thoughts like style, structure, or discourse connectives. STATe-of-Thoughts addresses these limitations through targeted interventions, weighted multi-dimensional evaluation, and controller-driven early stopping.
+**Limitations of Standard ToT.** Despite its effectiveness, the original Tree of Thoughts framework has several limitations that we address in this work. First, *diversity in branching* is limited—without explicit guidance, sampled thoughts tend to converge to similar content, reducing the benefit of exploring multiple paths. Second, *evaluation functions* are relatively simple, using coarse classifications (e.g., "sure/maybe/impossible") rather than nuanced multi-dimensional rubrics. Third, *there is no mechanism for early stopping*—the search proceeds to a fixed depth regardless of whether sufficient reasoning has already been accumulated. STATe-of-Thoughts addresses these limitations through targeted interventions, weighted multi-dimensional evaluation, and controller-driven early stopping.
+Beyond this, ToT lacks structured actions or tools for systematically modulating properties of generated thoughts. In contrast, the controller mechanism selects and records interpretable action choices, enabling efficient exploration of the action space to identify optimal combinations and estimate the effects of different choices.
 
 #### **Baseline: Beam Search over Reasoning**
 
@@ -132,8 +133,8 @@ _Mermaid source: `figures/baseline_beam_search.mmd`._
 We extend DSPy to support **structured multi-step reasoning** with process supervision. Our extensions include:
 
 - **ReasoningSignature** and **ReasoningField**: First-class support for intermediate reasoning steps
-- **Core Modules**: Controller, Generator, and Evaluator for the Tree of Thoughts cycle
-- **VLLMGeneratorAdapter**: Specialized adapter with pre-filling, stop token control, and heterogeneous batching
+- **Core Modules**: Controller, Generator, and Evaluator modules that are used in each step of the Tree of Thoughts algorithm
+- **VLLMGeneratorAdapter**: Specialized adapter with pre-filling, stop token control, and batching to generate the branching operation for an entire layer of the tree in parallel
 - **Weighted Evaluation**: `rubric_weight` for multi-dimensional scoring
 
 The sections below follow a **top-down** structure: from the Tree of Thoughts algorithm, to the modules that implement it, to the signatures that define tasks, and finally to the adapters that translate everything into LLM prompts.
@@ -313,43 +314,56 @@ _Mermaid source: `figures/reranker_controller.mmd`._
 
 **Defining Tools/Actions**
 
-Tools are functions wrapped as `dspy.Tool` that return interventions:
+Tools are automatically generated based on user provided `json` files of the following format:
 
-```python
-from dspy import Tool
-
-def select_style_structure(style: str, structure: str) -> dict:
-    """Select style and structure for the next reasoning step."""
-    STYLE_OPTIONS = {
-        "Knowledge": "I should present logical arguments based on facts...",
-        "Trust": "I should build credibility and establish trust...",
-    }
-    STRUCTURE_OPTIONS = {
-        "Contrast": "However",
-        "Cause": "Therefore",
-        "Example": "For example",
-    }
-    return {
-        "internal_reasoning": STYLE_OPTIONS[style],
-        "prefix": STRUCTURE_OPTIONS[structure],
-        "continue_reasoning": True,
-    }
-
-# Wrap as dspy.Tool
-style_structure_tool = Tool(
-    name="select_style_structure",
-    func=select_style_structure,
-    desc="Select communication style and discourse structure.",
-    args={
-        "style": "One of: Knowledge, Trust",
-        "structure": "One of: Contrast, Cause, Example",
+```json
+{
+  "name": "Target Audience",
+  "definition": "Forces the next reasoning step to adapt language, tone, and examples for a specific age demographic, controlling how information is presented and framed. Interventions along this dimension ensure the next step uses vocabulary, cultural references, and communication styles appropriate for a particular audience (e.g., simple and playful for children, relatable and current for teenagers, or professional and grounded for middle-aged adults).",
+  "choices": {
+    "children": {
+      "definition": "Writes for children ages 5-12 using simple language, examples, and enthusiasm",
+      "internal_reasoning": "I should write specifically for children (ages 5-12). I should use very simple words, short sentences, and a cheerful, playful tone with fun, concrete examples. "
     },
-)
+    "young_adults": {
+      "definition": "Writes for young adults ages 20-35 using modern, direct language with practical examples",
+      "internal_reasoning": "I should write specifically for young adults (ages 20-35). I should use clear, modern language with practical examples and a confident, approachable tone. "
+    },
+    "seniors": {
+      "definition": "Writes for seniors (ages 56+) using clear, respectful and reminiscent language",
+      "internal_reasoning": "I should write specifically for seniors (ages 56+). I should use clear, respectful language with a warm tone, gentle pacing, and thoughtfully explained examples. "
+    }
+  }
+}
+
+{
+  "name": "Reasoning Action",
+  "definition": "Forces the next reasoning step to perform a specific analytical operation focused on understanding and satisfying constraints, controlling the type of cognitive work being done. Interventions along this dimension ensure the next step executes a particular reasoning function (e.g., breaking down requirements, identifying potential conflicts, planning compliance strategies, or validating solutions against constraints).",
+  "choices": {
+    "clarify_constraints": {
+      "definition": "Breaks down instructions into distinct requirements and ensures every rule is explicitly understood",
+      "internal_reasoning": "I should break down the instructions into distinct requirements. I should ensure every rule or constraint is explicitly understood and clarified. For constraints involving upper or lower bounds, I should add a reasonable buffer such that the output unmistakably meets the specified constraints. ",
+      "prefix": "Let me first clarify"
+    },
+    "identify_challenges": {
+      "definition": "Highlights constraints likely to conflict or be hard to satisfy, considering edge cases and ambiguities",
+      "internal_reasoning": "I should identify constraints that are likely to conflict or be hard to satisfy. I should consider edge cases, rare conditions, and ambiguities in the instructions and identify strategies to safely satisfy the constraints. ",
+      "prefix": "The main challenges are"
+    },
+    ...
+    "candidate_solution": {
+      "definition": "Proposes a complete candidate solution that attempts to satisfy all constraints",
+      "internal_reasoning": "I should propose a complete candidate solution that attempts to satisfy all constraints. I should build on previous analyses and ensure the solution is satisfying the constraints. ",
+      "prefix": "Here is a candidate solution"
+    }
+  }
+}
+
 ```
 
-When the Controller selects `style="Trust"` and `structure="Contrast"`, the Generator receives:
-- `internal_reasoning`: *"I should build credibility and establish trust..."*
-- `prefix`: *"However"*
+When the Controller selects `candidate_solution` for `Reasoning Action`, the Generator receives:
+- `internal_reasoning`: *"I should propose a complete candidate solution that attempts to satisfy all constraints. I should build on previous analyses and ensure the solution is satisfying the constraints. "*
+- `prefix`: *"Here is a candidate solution"*
 
 The Generator then pre-fills the assistant message with these interventions before generating.
 
@@ -400,70 +414,7 @@ $$\text{score} = \sum_i (\text{score}_i \times \text{weight}_i)$$
 
 ---
 
-### **3. Signatures & Fields (`signatures/`)**
-
-Signatures define task schemas. We extend DSPy with `ReasoningSignature` and `ReasoningField`.
-
-#### **ReasoningSignature**
-
-A signature with three field types:
-
-| Field Type | Class | Notation | Generated When |
-|:-----------|:------|:---------|:---------------|
-| **Input** | `InputField` | $x$ | Provided by user |
-| **Reasoning** | `ReasoningField` | $z$ | Each step (iteratively) |
-| **Output** | `OutputField` | $y$ | When controller says `finish` |
-
-```python
-from signatures import ReasoningSignature, InputField, ReasoningField, OutputField
-
-class ArgumentGeneration(ReasoningSignature):
-    """Generate an argument for the given stance on the topic."""
-    
-    # Inputs (x) - provided by user
-    topic: str = InputField(desc="The topic of the argument")
-    stance: str = InputField(desc="The stance to argue for (PRO or ANTI)")
-    
-    # Reasoning (z) - generated iteratively, one per step
-    claim: str = ReasoningField(desc="A supporting claim for the stance")
-    
-    # Output (y) - generated when reasoning is complete
-    argument: str = OutputField(desc="The final synthesized argument")
-```
-
-#### **Extended Field Features**
-
-**ReasoningField**: Forces structured intermediate steps. The model generates one value per reasoning step until the Controller decides to finish or the maximum number of steps is reached.
-
-**rubric_weight**: Enables weighted multi-dimensional evaluation:
-
-```python
-class EvaluateArgument(ReasoningSignature):
-    """Evaluate an argument on multiple dimensions."""
-    argument: str = InputField(desc="The argument to evaluate")
-    
-    # Weighted scoring: 30% + 30% + 40% = 100%
-    persuasiveness: int = OutputField(
-        desc="How convincing (1-7)", rubric_weight=0.3, ge=1, le=7
-    )
-    coherence: int = OutputField(
-        desc="How well-structured (1-7)", rubric_weight=0.3, ge=1, le=7
-    )
-    relevance: int = OutputField(
-        desc="How on-topic (1-7)", rubric_weight=0.4, ge=1, le=7
-    )
-```
-
-**Pydantic Constraints**: Automatically translated to prompt instructions:
-
-```python
-# Generates: "Each claim should be between 2 and 5 sentences."
-claim: str = ReasoningField(min_length=2, max_length=5, granularity="sentence")
-```
-
----
-
-### **4. Adapters (`adapter/`)**
+### **3. Adapters (`adapter/`)**
 
 Adapters translate abstract signatures into concrete LLM prompts and parse outputs back into structured data.
 
@@ -540,14 +491,34 @@ outputs = adapter(
 
 ## **Quick Start**
 
-Here is a minimal example of running a Tree of Thoughts pipeline:
+Assume, we have defined controller actions in `path/to/actions.json` as follows
+```json
+{
+  "name": "Reasoning Action",
+  "definition": "Select a reasoning action for constraint-focused analysis in the next reasoning step",
+  "choices": {
+    "clarify_constraints": {
+      "definition": "Breaks down instructions into distinct requirements and ensures every rule is explicitly understood",
+      "internal_reasoning": "I should break down the instructions into distinct requirements. I should ensure every rule or constraint is explicitly understood and clarified. For constraints involving upper or lower bounds, I should add a reasonable buffer such that the output unmistakably meets the specified constraints. ",
+      "prefix": "Let me first clarify"
+    },
+    "identify_challenges": {
+      "definition": "Highlights constraints likely to conflict or be hard to satisfy, considering edge cases and ambiguities",
+      "internal_reasoning": "I should identify constraints that are likely to conflict or be hard to satisfy. I should consider edge cases, rare conditions, and ambiguities in the instructions and identify strategies to safely satisfy the constraints. ",
+      "prefix": "The main challenges are"
+    }
+  }  
+}
+```
+
+Here is a minimal example of running a Tree of Thoughts pipeline.
 
 ```python
 from lm.local_lm import LocalVLLM
 from predict.tree_of_thoughts import TreeOfThoughts
 from signatures import ReasoningSignature, InputField, ReasoningField, OutputField
 
-# 1. Define Signatures
+# 1. Define Signatures and Controller Choices
 class QuestionAnsweringWithReasoning(ReasoningSignature):
     """Answer the question by reasoning step-by-step."""
     question: str = InputField(desc="The question to answer")
@@ -570,6 +541,7 @@ tot = TreeOfThoughts(
     evaluator_signature=EvaluateAnswer,
     generative_lm=generative_lm,
     evaluator_lm=evaluator_lm,
+    action_space_paths=PATH/TO/ACTIONS.json
 )
 
 # 4. Run Inference

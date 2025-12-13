@@ -1,0 +1,37 @@
+graph LR
+    subgraph Plan["<b>1. Plan</b>"]
+        Controller["Controller (π)"]
+        VLLM1["vLLM<br/><i>VLLMScoringAdapter or<br/>VLLMAdapter</i>"]
+        Controller -.-> VLLM1
+    end
+
+    subgraph Generate["<b>2. Generate</b>"]
+        Generator["Generator (G)"]
+        VLLM2["vLLM<br/><i>VLLMGeneratorAdapter</i>"]
+        Generator -.-> VLLM2
+    end
+
+    subgraph Evaluate["<b>3. Evaluate</b>"]
+        Evaluator["Evaluator (V)"]
+        VLLM3["vLLM<br/><i>VLLMAdapter</i>"]
+        Evaluator -.-> VLLM3
+    end
+
+    subgraph Select["<b>4. Select</b>"]
+        Beam["Beam Search<br/>top-k"]
+    end
+
+    Plan --> Generate --> Evaluate --> Select
+    Select -->|"next layer"| Plan
+
+    style Plan fill:#e1f5fe,stroke:#01579b,color:#000
+    style Generate fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style Evaluate fill:#fff3e0,stroke:#ef6c00,color:#000
+    style Select fill:#f3e5f5,stroke:#7b1fa2,color:#000
+    style Controller fill:#bbdefb,stroke:#1976d2,color:#000
+    style Generator fill:#c8e6c9,stroke:#388e3c,color:#000
+    style Evaluator fill:#ffe0b2,stroke:#f57c00,color:#000
+    style Beam fill:#e1bee7,stroke:#8e24aa,color:#000
+    style VLLM1 fill:#ffe1e1,stroke:#d32f2f,color:#000
+    style VLLM2 fill:#ffe1e1,stroke:#d32f2f,color:#000
+    style VLLM3 fill:#ffe1e1,stroke:#d32f2f,color:#000

@@ -1,0 +1,35 @@
+graph TD
+    subgraph Input["Input Processing"]
+        Sig[Signature]
+        State[State]
+    end
+    
+    Adapter[Adapter]
+    
+    Sig --> |"Field Descriptions<br/>& Instructions"| Adapter
+    State --> |"Input Values"| Adapter
+    State --> |"Reasoning Trajectory"| Adapter
+    State --> |"Controller Intervention"| Adapter
+    
+    Adapter --> |"Construct Prompts<br/>(XML/Chat)"| Prompt[Raw Prompts]
+    Prompt --> |"Generate"| vLLM[vLLM Engine]
+    vLLM --> |"Raw Text"| Output[Model Output]
+    
+    subgraph OutputProc["Output Processing"]
+        Parser[Adapter Parser]
+        Fields[Structured Fields]
+    end
+    
+    Output --> |"Parse XML Tags"| Parser
+    Parser --> |"Validate Types"| Fields
+    
+    style Input fill:#e3f2fd,stroke:#1976d2,color:#000
+    style OutputProc fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style Sig fill:#bbdefb,stroke:#1976d2,color:#000
+    style State fill:#bbdefb,stroke:#1976d2,color:#000
+    style Adapter fill:#fff4e1,stroke:#f57c00,stroke-width:2px,color:#000
+    style Prompt fill:#fff4e1,stroke:#f57c00,color:#000
+    style vLLM fill:#ffe1e1,stroke:#d32f2f,color:#000
+    style Output fill:#ffe1e1,stroke:#d32f2f,color:#000
+    style Parser fill:#c8e6c9,stroke:#388e3c,color:#000
+    style Fields fill:#81c784,stroke:#388e3c,color:#000

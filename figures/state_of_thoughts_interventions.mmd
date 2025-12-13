@@ -1,0 +1,70 @@
+---
+config:
+  flowchart:
+    defaultRenderer: elk
+---
+flowchart TB
+    subgraph Input[" "]
+        X["topic: 'Renewable energy should receive<br/>more public funding' | stance: PRO"]
+    end
+
+    subgraph Layer1[" "]
+        Z1a["<b><u>Note that</u></b> solar<br/>costs dropped 90%"]
+        Z1b["<b><u>For example</u></b> Germany<br/>generates 40% green"]
+        Z1c["<b><u>Consider</u></b> the job<br/>market growth"]
+    end
+
+    subgraph Layer2[" "]
+        Z2a["<b><u>However</u></b> storage<br/>costs fell 70%"]
+        Z2b["<b><u>Moreover</u></b> China<br/>invested $750B"]
+        Z2c["<b><u>Specifically</u></b> wind<br/>capacity doubled"]
+        Z2d["<b><u>Similarly</u></b> EU targets<br/>55% by 2030"]
+        Z2e["<b><u>In particular</u></b><br/>microgrids expand"]
+    end
+
+    subgraph Outputs[" "]
+        Y1[While costs seem high,<br/>the economics are clear...]
+        Y2[Countries show renewables<br/>work at national scale...]
+        Y3[Critics are wrong:<br/>storage is now viable...]
+        Y4[The EU example proves<br/>policy drives adoption...]
+        Y5[Global momentum is<br/>now unstoppable...]
+        Y6[Investment returns<br/>exceed expectations...]
+        Yearly[Germany proves renewables<br/>can power industry...]
+    end
+
+    X -->|.87| Z1a
+    X -->|.82| Z1b
+    X -->|.68| Z1c
+    Z1a -->|.89| Z2a
+    Z1a -->|.74| Z2b
+    Z1a -->|.61| Z2c
+    Z1b -->|.85| Z2d
+    Z1b -->|.71| Z2e
+    Z1b -.->|"FINISH .83"| Yearly
+    Z2a -->|.93| Y1
+    Z2a -->|.86| Y2
+    Z2a -->|.72| Y3
+    Z2d -->|.91| Y4
+    Z2d -->|.84| Y5
+    Z2d -->|.69| Y6
+
+    style Input fill:#bbdefb,stroke:#1976d2
+    style Layer1 fill:#f5f5f5,stroke:#bdbdbd
+    style Layer2 fill:#f5f5f5,stroke:#bdbdbd
+    style Outputs fill:#c8e6c9,stroke:#66bb6a
+    style X fill:#64b5f6,stroke:#1976d2,color:#000
+    style Z1a fill:#e0e0e0,stroke:#757575,color:#000
+    style Z1b fill:#e0e0e0,stroke:#757575,color:#000
+    style Z1c fill:#ef9a9a,stroke:#e53935,color:#000
+    style Z2a fill:#e0e0e0,stroke:#757575,color:#000
+    style Z2b fill:#ef9a9a,stroke:#e53935,color:#000
+    style Z2c fill:#ef9a9a,stroke:#e53935,color:#000
+    style Z2d fill:#e0e0e0,stroke:#757575,color:#000
+    style Z2e fill:#ef9a9a,stroke:#e53935,color:#000
+    style Y1 fill:#81c784,stroke:#43a047,color:#000
+    style Y2 fill:#81c784,stroke:#43a047,color:#000
+    style Y3 fill:#ef9a9a,stroke:#e53935,color:#000
+    style Y4 fill:#81c784,stroke:#43a047,color:#000
+    style Y5 fill:#ef9a9a,stroke:#e53935,color:#000
+    style Y6 fill:#ef9a9a,stroke:#e53935,color:#000
+    style Yearly fill:#ffe082,stroke:#ffa000,color:#000

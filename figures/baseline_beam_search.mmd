@@ -1,0 +1,70 @@
+---
+config:
+  flowchart:
+    defaultRenderer: elk
+---
+flowchart TB
+    subgraph Input[" "]
+        X["topic: 'Renewable energy should receive<br/>more public funding' | stance: PRO"]
+    end
+
+    subgraph Layer1[" "]
+        Z1a[Renewable energy<br/>saves money]
+        Z1b[Clean energy is<br/>cost-effective]
+        Z1c[Solar power<br/>cuts expenses]
+    end
+
+    subgraph Layer2[" "]
+        Z2a[Long-term savings<br/>outweigh costs]
+        Z2b[Installation costs<br/>dropping fast]
+        Z2c[Grid parity<br/>achieved]
+        Z2d[Energy bills<br/>reduced 40%]
+        Z2e[Households save<br/>on utilities]
+        Z2f[Strong ROI<br/>within 5 years]
+    end
+
+    subgraph Outputs[" "]
+        Y1[Renewable energy saves<br/>money in the long run...]
+        Y2[Clean energy is the<br/>economical choice...]
+        Y3[Going green means<br/>saving green...]
+        Y4[The economic case<br/>is clear...]
+        Y5[Lower bills make<br/>renewables worthwhile...]
+        Y6[Cost savings drive<br/>the transition...]
+    end
+
+    X -->|.85| Z1a
+    X -->|.78| Z1b
+    X -->|.42| Z1c
+    Z1a -->|.88| Z2a
+    Z1a -->|.65| Z2b
+    Z1a -->|.52| Z2c
+    Z1b -->|.79| Z2d
+    Z1b -->|.72| Z2e
+    Z1b -->|.58| Z2f
+    Z2a -->|.93| Y1
+    Z2a -->|.85| Y2
+    Z2a -->|.71| Y3
+    Z2d -->|.89| Y4
+    Z2d -->|.82| Y5
+    Z2d -->|.68| Y6
+
+    style Input fill:#bbdefb,stroke:#1976d2
+    style Layer1 fill:#f5f5f5,stroke:#bdbdbd
+    style Layer2 fill:#f5f5f5,stroke:#bdbdbd
+    style Outputs fill:#c8e6c9,stroke:#66bb6a
+    style X fill:#64b5f6,stroke:#1976d2,color:#000
+    style Z1a fill:#e0e0e0,stroke:#757575,color:#000
+    style Z1b fill:#e0e0e0,stroke:#757575,color:#000
+    style Z1c fill:#ef9a9a,stroke:#e53935,color:#000
+    style Z2a fill:#e0e0e0,stroke:#757575,color:#000
+    style Z2b fill:#ef9a9a,stroke:#e53935,color:#000
+    style Z2c fill:#ef9a9a,stroke:#e53935,color:#000
+    style Z2d fill:#e0e0e0,stroke:#757575,color:#000
+    style Z2e fill:#ef9a9a,stroke:#e53935,color:#000
+    style Z2f fill:#ef9a9a,stroke:#e53935,color:#000
+    style Y1 fill:#81c784,stroke:#43a047,color:#000
+    style Y2 fill:#81c784,stroke:#43a047,color:#000
+    style Y3 fill:#ef9a9a,stroke:#e53935,color:#000
+    style Y4 fill:#81c784,stroke:#43a047,color:#000
+    style Y5 fill:#ef9a9a,stroke:#e53935,color:#000
+    style Y6 fill:#ef9a9a,stroke:#e53935,color:#000

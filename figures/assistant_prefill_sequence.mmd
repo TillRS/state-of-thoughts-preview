@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant C as Controller
+    participant A as Adapter
+    participant V as vLLM
+    
+    Note over C,V: Continue Reasoning
+    C->>A: continue_reasoning=True<br/>prefix="For example,"
+    A->>A: Pre-fill: "<step>## claim<br/>For example,"
+    A->>A: Stop tokens: ["</step>"]
+    A->>V: Generate continuation
+    V-->>A: "studies show... </step>"
+    A->>A: Parse reasoning fields
+    A-->>C: {"claim": "For example, studies show..."}
+    
+    Note over C,V: Generate Final Answer
+    C->>A: continue_reasoning=False
+    A->>A: Pre-fill: "</thinking><answer>## argument"
+    A->>A: Stop tokens: ["</answer>"]
+    A->>V: Generate continuation
+    V-->>A: "In conclusion... </answer>"
+    A->>A: Parse output fields
+    A-->>C: {"argument": "In conclusion..."}
