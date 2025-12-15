@@ -2,7 +2,7 @@
 
 _**Note**: This is a preliminary preview, a full release will come soon. Please refer to LICENSE.txt for the licensing of this preview._
 
-**dspy-reasoning** is a modular framework that implements **STATe-of-Thoughts (Structured Action Templates for Tree-of-Thoughts)**. It is a method for inference-time compute that augments beam search with targeted interventions (tools) to modulate reasoning trajectories (influencing latent properties of reasoning steps like structure, style, and content).
+This repo presents a preview of **STATe-of-Thoughts (Structured Action Templates for Tree-of-Thoughts)**, a method for inference-time compute that augments beam search with targeted interventions (tools) to modulate reasoning trajectories (influencing latent properties of reasoning steps like structure, style, and content).
 
 Built on [DSPy](https://github.com/stanfordnlp/dspy) and [vLLM](https://github.com/vllm-project/vllm), this framework enables local Large Language Models (LLMs) to perform systematic exploration of reasoning trajectories, evaluate intermediate steps (process supervision), and select optimal trajectories for complex tasks like argumentation, creative writing, and math.
 
@@ -724,3 +724,17 @@ pytest predict/test_controller.py               # Controller
 ### **Integration Tests**
 
 Integration tests require access to GPUs and run against real models. Simply run the same tests as above in a system with GPUs, and integration tests will run rather than get skipped.
+
+
+## **Acknowledgements**
+
+The Co-Creators of this library:
+
+- [Zachary Bamberger](https://zachary.cswp.cs.technion.ac.il/) (Technion -- Israel Institute of Technology)
+- [Till Saenger](https://tillrs.github.io/) (Princton University)
+- Gilad Morad
+
+The Supervisors of this project:
+- [Dr. Amir Feder](https://www.amirfeder.com/) (Hebrew University & Google)
+- [Dr. Ofra Amir](https://dds.technion.ac.il/people/academic-staff/ofra-amir/) (Technion -- Israel Institute of Technology)
+- [Brandon Stewart](https://bstewart.scholar.princeton.edu/) (Princeton University) 
