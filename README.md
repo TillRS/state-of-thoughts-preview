@@ -731,10 +731,10 @@ Integration tests require access to GPUs and run against real models. Simply run
 The Co-Creators of this library:
 
 - [Zachary Bamberger](https://zachary.cswp.cs.technion.ac.il/) (Technion -- Israel Institute of Technology)
-- [Till Saenger](https://tillrs.github.io/) (Princton University)
+- [Till Saenger](https://tillrs.github.io/) (Princeton University)
 - Gilad Morad
 
 The Supervisors of this project:
-- [Dr. Amir Feder](https://www.amirfeder.com/) (Hebrew University & Google)
-- [Dr. Ofra Amir](https://dds.technion.ac.il/people/academic-staff/ofra-amir/) (Technion -- Israel Institute of Technology)
+- [Amir Feder](https://www.amirfeder.com/) (Hebrew University & Google)
+- [Ofra Amir](https://dds.technion.ac.il/people/academic-staff/ofra-amir/) (Technion -- Israel Institute of Technology)
 - [Brandon Stewart](https://bstewart.scholar.princeton.edu/) (Princeton University) 
