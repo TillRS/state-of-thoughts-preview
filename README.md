@@ -107,18 +107,18 @@ This compositionality allows each sub-module to be tested, optimized, and reused
 
 ---
 
-## **Background: Tree of Thoughts**
+## **Background: Tree-of-Thoughts**
 
-**Tree of Thoughts (ToT)** ([Yao et al., 2023](https://papers.nips.cc/paper_files/paper/2023/hash/271db9922b8d1f4dd7aaef84ed5ac703-Abstract-Conference.html)) is a framework for deliberate problem-solving with large language models. While standard autoregressive LMs make token-level, left-to-right decisions during inference, ToT enables exploration over coherent units of text called *thoughts*—intermediate reasoning steps toward solving a problem. ToT frames problem-solving as search over a tree, where each node represents a *state* $s = [x, z_1, \ldots, z_i]$ consisting of the input $x$ and the sequence of thoughts generated so far. The objective of Tree of Thoughts is to create one or more promising candidates for an answer to the problem, $y$. The framework involves four components: (1) *decomposing* the problem into thought steps, (2) *generating* candidate thoughts from each state, (3) *evaluating* states to guide search, and (4) applying a *search algorithm* (e.g., BFS or DFS). ToT has been shown to improve performance on several tasks requiring non-trivial planning or search.
+**Tree-of-Thoughts (ToT)** ([Yao et al., 2023](https://papers.nips.cc/paper_files/paper/2023/hash/271db9922b8d1f4dd7aaef84ed5ac703-Abstract-Conference.html)) is a framework for deliberate problem-solving with large language models. While standard autoregressive LMs make token-level, left-to-right decisions during inference, ToT enables exploration over coherent units of text called *thoughts*—intermediate reasoning steps toward solving a problem. ToT frames problem-solving as search over a tree, where each node represents a *state* $s = [x, z_1, \ldots, z_i]$ consisting of the input $x$ and the sequence of thoughts generated so far. The objective of Tree-of-Thoughts is to create one or more promising candidates for an answer to the problem, $y$. The framework involves four components: (1) *decomposing* the problem into thought steps, (2) *generating* candidate thoughts from each state, (3) *evaluating* states to guide search, and (4) applying a *search algorithm* (e.g., BFS or DFS). ToT has been shown to improve performance on several tasks requiring non-trivial planning or search.
 
-**Limitations of Standard ToT.** Despite its effectiveness, the original Tree of Thoughts framework has several limitations that we address in this work. First, *diversity in branching* is limited—without explicit guidance, sampled thoughts tend to converge to similar content, reducing the benefit of exploring multiple paths. Second, *evaluation functions* are relatively simple, using coarse classifications (e.g., "sure/maybe/impossible") rather than nuanced multi-dimensional rubrics. Third, *there is no mechanism for early stopping*—the search proceeds to a fixed depth regardless of whether sufficient reasoning has already been accumulated. STATe-of-Thoughts addresses these limitations through targeted interventions, weighted multi-dimensional evaluation, and controller-driven early stopping.
+**Limitations of Standard ToT.** Despite its effectiveness, the original Tree-of-Thoughts framework has several limitations that we address in this work. First, *diversity in branching* is limited—without explicit guidance, sampled thoughts tend to converge to similar content, reducing the benefit of exploring multiple paths. Second, *evaluation functions* are relatively simple, using coarse classifications (e.g., "sure/maybe/impossible") rather than nuanced multi-dimensional rubrics. Third, *there is no mechanism for early stopping*—the search proceeds to a fixed depth regardless of whether sufficient reasoning has already been accumulated. STATe-of-Thoughts addresses these limitations through targeted interventions, weighted multi-dimensional evaluation, and controller-driven early stopping.
 Beyond this, ToT lacks structured actions or tools for systematically modulating properties of generated thoughts. In contrast, the controller mechanism selects and records interpretable action choices, enabling efficient exploration of the action space to identify optimal combinations and estimate the effects of different choices.
 
 #### **Baseline: Beam Search over Reasoning**
 
-Standard Tree of Thoughts generates `branching_factor` candidates per node, scores them, and keeps `beam_width` for expansion (i.e., selecting them as the next layer's frontier). 
+Standard Tree-of-Thoughts generates `branching_factor` candidates per node, scores them, and keeps `beam_width` for expansion (i.e., selecting them as the next layer's frontier). 
 
-**Problem:** Without guidance, the model tends to generate to similar reasoning across branches, which results in homogeneous final outputs.
+**Problem:** Without guidance, the model tends to generate similar reasoning across branches, which results in homogeneous final outputs.
 
 ![Baseline beam search over reasoning](figures/baseline_beam_search.png)
 
@@ -133,15 +133,15 @@ _Mermaid source: `figures/baseline_beam_search.mmd`._
 We extend DSPy to support **structured multi-step reasoning** with process supervision. Our extensions include:
 
 - **ReasoningSignature** and **ReasoningField**: First-class support for intermediate reasoning steps
-- **Core Modules**: Controller, Generator, and Evaluator modules that are used in each step of the Tree of Thoughts algorithm
+- **Core Modules**: Controller, Generator, and Evaluator modules that are used in each step of the Tree-of-Thoughts algorithm
 - **VLLMGeneratorAdapter**: Specialized adapter with pre-filling, stop token control, and batching to generate the branching operation for an entire layer of the tree in parallel
 - **Weighted Evaluation**: `rubric_weight` for multi-dimensional scoring
 
-The sections below follow a **top-down** structure: from the Tree of Thoughts algorithm, to the modules that implement it, to the signatures that define tasks, and finally to the adapters that translate everything into LLM prompts.
+The sections below follow a **top-down** structure: from the Tree-of-Thoughts algorithm, to the modules that implement it, to the signatures that define tasks, and finally to the adapters that translate everything into LLM prompts.
 
 ---
 
-### **1. Tree of Thoughts**
+### **1. Tree-of-Thoughts**
 
 The framework explores reasoning trajectories $Z = [z_1, z_2, \ldots, z_n]$ for a problem input $x$, eventually producing a final output $y$.
 
@@ -253,7 +253,7 @@ def state_beam_search(x, generator, controller, evaluator, m, k, n):
 
 ### **2. Core Modules (`predict/`)**
 
-Three modules implement the Tree of Thoughts cycle. Each module wraps an LLM and uses adapters to format prompts and parse outputs.
+Three modules implement the Tree-of-Thoughts cycle. Each module wraps an LLM and uses adapters to format prompts and parse outputs.
 
 <table>
 <tr>
@@ -389,7 +389,7 @@ candidates = generator(
 )
 # Returns: [
 # {"claim": "For example, studies show..."}, 
-# {"claim": "For example, a recent Neurips paper states that..."}, 
+# {"claim": "For example, a recent NeurIPS paper states that..."}, 
 # {"claim": "For example, a recent Nature paper finds that..."}
 # ...
 # ]
@@ -511,7 +511,7 @@ Assume, we have defined controller actions in `path/to/actions.json` as follows
 }
 ```
 
-Here is a minimal example of running a Tree of Thoughts pipeline.
+Here is a minimal example of running a Tree-of-Thoughts pipeline.
 
 ```python
 from lm.local_lm import LocalVLLM
@@ -535,7 +535,7 @@ class EvaluateAnswer(ReasoningSignature):
 generative_lm = LocalVLLM(model="Qwen/Qwen3-30B-Instruct", task="generate")
 evaluator_lm = LocalVLLM(model="Qwen/Qwen3-Reranker-8B", task="score")
 
-# 3. Configure Tree of Thoughts
+# 3. Configure Tree-of-Thoughts
 tot = TreeOfThoughts(
     generator_signature=QuestionAnsweringWithReasoning,
     evaluator_signature=EvaluateAnswer,
@@ -561,7 +561,7 @@ print(f"Final Answer: {output.answer}")
 - **[Language Models (lm/)](lm/README.md)**: VLLM integration for generation and scoring
 - **[Adapters (adapter/)](adapter/README.md)**: Bridging DSPy signatures to VLLM prompts
 - **[Prediction Logic (predict/)](predict/README.md)**: Controller, Generator, and Evaluator modules
-  - **[Tree of Thoughts (predict/tree_of_thoughts/)](predict/tree_of_thoughts/README.md)**: The core search algorithm
+  - **[Tree-of-Thoughts (predict/tree_of_thoughts/)](predict/tree_of_thoughts/README.md)**: The core search algorithm
 - **[Signatures (signatures/)](signatures/README.md)**: Custom fields and reasoning schemas
 
 ---
