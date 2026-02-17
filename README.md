@@ -1,6 +1,6 @@
 # **STATe-of-Thoughts: Structured Action Templates for Tree-of-Thoughts**
 
-_**Note**: This is a preliminary preview, a full release will come soon. Please refer to LICENSE.txt for the licensing of this preview._
+_**Note**: This is an outdated preview, please refer to [https://github.com/zbambergerNLP/state-of-thoughts](https://github.com/zbambergerNLP/state-of-thoughts)._
 
 This repo presents a preview of **STATe-of-Thoughts (Structured Action Templates for Tree-of-Thoughts)**, a method for inference-time compute that augments beam search with targeted interventions (tools) to modulate reasoning trajectories (influencing latent properties of reasoning steps like structure, style, and content).
 
